@@ -32,6 +32,11 @@ class NoteResponse(NoteBase):
         from_attributes = True
 
 
+class NoteListResponse(BaseModel):
+    notes: List[NoteResponse]
+    total: int
+
+
 # Search Schemas
 class SearchRequest(BaseModel):
     keyword: str = ""
