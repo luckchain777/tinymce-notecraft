@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query, File, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.background import BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -33,9 +34,9 @@ async def startup_event():
     os.makedirs("static/uploads", exist_ok=True)
 
 
-# Mount static files (will be created by frontend phase)
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files - ensure directory exists before mounting
+os.makedirs("static/uploads", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Root Endpoint
@@ -192,6 +193,7 @@ def update_setting(
 def export_note(
     note_id: int,
     format: str = Query(..., pattern="^(html|markdown)$"),
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     """Export a note in HTML or Markdown format."""
@@ -216,6 +218,9 @@ def export_note(
     
     with open(temp_path, "w", encoding="utf-8") as f:
         f.write(content)
+    
+    # Schedule cleanup of temp file after response
+    background_tasks.add_task(os.remove, temp_path)
     
     # Return file response
     return FileResponse(

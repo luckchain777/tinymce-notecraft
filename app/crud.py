@@ -107,6 +107,10 @@ def update_note(
         update_data["plaintext"] = extract_plaintext(update_data["html_content"])
         update_data["markdown_content"] = html_to_markdown(update_data["html_content"])
     
+    # Ensure tags is never set to None (coerce to empty list)
+    if "tags" in update_data and update_data["tags"] is None:
+        update_data["tags"] = []
+    
     # Update fields
     for field, value in update_data.items():
         setattr(db_note, field, value)

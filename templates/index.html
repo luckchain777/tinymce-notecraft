@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 NoteCraft - Personal Wiki</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    
+    <!-- FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Turndown.js for HTML to Markdown conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.js"></script>
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title">📝 NoteCraft</h1>
+            </div>
+            
+            <div class="header-center">
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        class="search-input" 
+                        placeholder="Search notes..."
+                        aria-label="Search notes"
+                    >
+                    <button id="search-btn" class="btn btn-primary" aria-label="Search">
+                        🔍
+                    </button>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button id="new-note-btn" class="btn btn-primary" aria-label="Create new note">
+                    ➕ New Note
+                </button>
+                <button id="dark-mode-toggle" class="btn btn-icon" aria-label="Toggle dark mode">
+                    🌓
+                </button>
+                <button id="settings-btn" class="btn btn-icon" aria-label="Settings">
+                    ⚙️
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="main-content" role="main">
+            <!-- Left Pane -->
+            <aside id="left-pane" class="left-pane" role="navigation" aria-label="Navigation and filters">
+                <!-- View Switcher -->
+                <section class="view-switcher">
+                    <h2 class="section-title">Views</h2>
+                    <div class="view-buttons">
+                        <button id="view-dashboard-btn" class="view-btn active" data-view="dashboard">
+                            📊 Dashboard
+                        </button>
+                        <button id="view-notes-btn" class="view-btn" data-view="notes">
+                            📝 Notes
+                        </button>
+                        <button id="view-calendar-btn" class="view-btn" data-view="calendar">
+                            📅 Calendar
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Areas Filter -->
+                <section class="areas-filter">
+                    <h2 class="section-title">Areas</h2>
+                    <div id="areas-filter-list" class="filter-list">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- Tags Filter -->
+                <section class="tags-filter">
+                    <h2 class="section-title">Tags</h2>
+                    <div id="tags-filter-list" class="filter-list">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Middle Pane -->
+            <section id="middle-pane" class="middle-pane">
+                <!-- Dashboard View -->
+                <div id="dashboard-view" class="view-container">
+                    <h2 class="view-title">Dashboard</h2>
+                    <div id="dashboard-stats" class="dashboard-stats">
+                        <!-- Statistics cards will be populated here -->
+                    </div>
+                    <div id="dashboard-recent" class="dashboard-recent">
+                        <h3 class="subsection-title">Recent Notes</h3>
+                        <div id="recent-notes-list" class="notes-grid">
+                            <!-- Recent notes will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes List View -->
+                <div id="notes-list-view" class="view-container hidden">
+                    <h2 class="view-title">All Notes</h2>
+                    <div id="notes-list" class="notes-list">
+                        <!-- Notes will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Calendar View -->
+                <div id="calendar-view" class="view-container hidden">
+                    <h2 class="view-title">Calendar</h2>
+                    <div id="calendar-container" class="calendar-container">
+                        <!-- FullCalendar will be initialized here -->
+                    </div>
+                </div>
+
+                <!-- Loading Template -->
+                <div id="loading-template" class="loading-spinner hidden">
+                    <div class="spinner"></div>
+                    <p>Loading...</p>
+                </div>
+
+                <!-- Empty State Templates -->
+                <div id="empty-notes-template" class="empty-state hidden">
+                    <div class="empty-icon">📝</div>
+                    <h3>No notes yet</h3>
+                    <p>Create your first note to get started!</p>
+                </div>
+
+                <div id="empty-search-template" class="empty-state hidden">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No results found</h3>
+                    <p>Try adjusting your search terms</p>
+                </div>
+
+                <div id="empty-calendar-template" class="empty-state hidden">
+                    <div class="empty-icon">📅</div>
+                    <h3>No events yet</h3>
+                    <p>Notes will appear here based on their dates</p>
+                </div>
+            </section>
+
+            <!-- Right Pane -->
+            <section id="right-pane" class="right-pane" role="complementary" aria-label="Note editor">
+                <!-- Editor Header -->
+                <div class="editor-header">
+                    <div class="editor-header-left">
+                        <h2 id="note-title-display" class="note-title">Untitled Note</h2>
+                        <span id="note-timestamp" class="note-timestamp"></span>
+                    </div>
+                </div>
+
+                <!-- Metadata Controls -->
+                <div class="metadata-controls">
+                    <!-- Area Selector -->
+                    <div class="form-group">
+                        <label for="area-select" class="form-label">Area</label>
+                        <select id="area-select" class="form-select" aria-label="Select area">
+                            <option value="">No Area</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Tag Picker -->
+                    <div class="form-group">
+                        <label for="tag-picker-container" class="form-label">Tags</label>
+                        <div id="tag-picker-container" class="tag-picker">
+                            <div id="selected-tags" class="selected-tags">
+                                <!-- Selected tags appear here -->
+                            </div>
+                            <div class="tag-picker-controls">
+                                <input 
+                                    type="text" 
+                                    id="tag-search-input" 
+                                    class="tag-search-input" 
+                                    placeholder="Search tags..."
+                                    aria-label="Search tags"
+                                >
+                                <div id="tag-dropdown" class="tag-dropdown hidden">
+                                    <!-- Available tags appear here -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="tags-select" value="[]">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TinyMCE Editor -->
+                <div id="tinymce-container" class="editor-container">
+                    <textarea id="tinymce-editor" class="tinymce-textarea">
+                        <!-- TinyMCE will be initialized here -->
+                    </textarea>
+                </div>
+
+                <!-- Markdown Editor -->
+                <div id="markdown-container" class="editor-container hidden">
+                    <textarea id="markdown-editor" class="markdown-editor" placeholder="Write markdown here..."></textarea>
+                </div>
+
+                <!-- Markdown Mode Toggle -->
+                <div class="markdown-toggle">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="markdown-mode-toggle">
+                        <span>Edit as Markdown</span>
+                    </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="save-note-btn" class="btn btn-success" aria-label="Save note">
+                        💾 Save
+                    </button>
+                    <button id="export-html-btn" class="btn btn-secondary" aria-label="Export as HTML">
+                        Export HTML
+                    </button>
+                    <button id="export-markdown-btn" class="btn btn-secondary" aria-label="Export as Markdown">
+                        Export MD
+                    </button>
+                    <button id="delete-note-btn" class="btn btn-danger" aria-label="Delete note">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay hidden" role="dialog" aria-labelledby="settings-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h2 id="settings-modal-title" class="modal-title">Settings</h2>
+                <button id="settings-modal-close" class="btn-close" aria-label="Close settings">×</button>
+            </div>
+
+            <!-- Modal Tabs -->
+            <div class="modal-tabs">
+                <button id="areas-tab-btn" class="tab-btn active" data-tab="areas">Areas</button>
+                <button id="tags-tab-btn" class="tab-btn" data-tab="tags">Tags</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <!-- Areas Tab -->
+                <div id="areas-tab" class="tab-content">
+                    <div class="settings-section">
+                        <h3 class="subsection-title">Manage Areas</h3>
+                        <div id="areas-list" class="settings-list">
+                            <!-- Areas list populated here -->
+                        </div>
+                        <form id="add-area-form" class="settings-form">
+                            <input 
+                                type="text" 
+                                id="area-name-input" 
+                                class="form-input" 
+                                placeholder="Area name"
+                                required
+                                aria-label="Area name"
+                            >
+                            <input 
+                                type="color" 
+                                id="area-color-input" 
+                                class="form-color-input" 
+                                value="#3b82f6"
+                                aria-label="Area color"
+                            >
+                            <button type="submit" class="btn btn-primary">Add Area</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tags Tab -->
+                <div id="tags-tab" class="tab-content hidden">
+                    <div class="settings-section">
+                        <h3 class="subsection-title">Manage Tags</h3>
+                        <div id="tags-list" class="settings-list">
+                            <!-- Tags list populated here -->
+                        </div>
+                        <form id="add-tag-form" class="settings-form">
+                            <input 
+                                type="text" 
+                                id="tag-name-input" 
+                                class="form-input" 
+                                placeholder="Tag name"
+                                required
+                                aria-label="Tag name"
+                            >
+                            <input 
+                                type="color" 
+                                id="tag-color-input" 
+                                class="form-color-input" 
+                                value="#10b981"
+                                aria-label="Tag color"
+                            >
+                            <button type="submit" class="btn btn-primary">Add Tag</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button id="settings-modal-close-btn" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+    <!-- Scripts -->
+    <script src="/static/js/editor.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/search.js"></script>
+    <script src="/static/js/calendar.js"></script>
+</body>
+</html>
