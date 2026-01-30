@@ -192,8 +192,8 @@ def update_setting(
 @app.get("/api/notes/{note_id}/export")
 def export_note(
     note_id: int,
-    format: str = Query(..., pattern="^(html|markdown)$"),
     background_tasks: BackgroundTasks,
+    format: str = Query(..., pattern="^(html|markdown)$"),
     db: Session = Depends(get_db)
 ):
     """Export a note in HTML or Markdown format."""
