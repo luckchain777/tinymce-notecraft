@@ -6,6 +6,8 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+![NoteCraft Home](assets/home.png)
+
 ## ✨ Features
 
 - **📝 Rich Text Editing** - Powered by TinyMCE with code syntax highlighting, tables, and image support
