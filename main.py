@@ -153,7 +153,10 @@ def get_areas(db: Session = Depends(get_db)):
 @app.post("/api/areas", status_code=201, response_model=schemas.AreaResponse)
 def create_area(area: schemas.AreaCreate, db: Session = Depends(get_db)):
     """Create a new area."""
-    return crud.create_area(db, area)
+    try:
+        return crud.create_area(db, area)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/api/tags", response_model=List[schemas.TagResponse])
@@ -165,7 +168,10 @@ def get_tags(db: Session = Depends(get_db)):
 @app.post("/api/tags", status_code=201, response_model=schemas.TagResponse)
 def create_tag(tag: schemas.TagCreate, db: Session = Depends(get_db)):
     """Create a new tag."""
-    return crud.create_tag(db, tag)
+    try:
+        return crud.create_tag(db, tag)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/api/settings", response_model=List[schemas.SettingResponse])

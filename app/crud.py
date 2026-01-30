@@ -289,6 +289,11 @@ def get_areas(db: Session) -> List[models.Area]:
 
 def create_area(db: Session, area: schemas.AreaCreate) -> models.Area:
     """Create a new area."""
+    # Check if area with this name already exists
+    existing_area = db.query(models.Area).filter(models.Area.name == area.name).first()
+    if existing_area:
+        raise ValueError(f"Area with name '{area.name}' already exists")
+    
     db_area = models.Area(name=area.name, color=area.color)
     db.add(db_area)
     db.commit()
@@ -305,6 +310,11 @@ def get_tags(db: Session) -> List[models.Tag]:
 
 def create_tag(db: Session, tag: schemas.TagCreate) -> models.Tag:
     """Create a new tag."""
+    # Check if tag with this name already exists
+    existing_tag = db.query(models.Tag).filter(models.Tag.name == tag.name).first()
+    if existing_tag:
+        raise ValueError(f"Tag with name '{tag.name}' already exists")
+    
     db_tag = models.Tag(name=tag.name, color=tag.color)
     db.add(db_tag)
     db.commit()

@@ -119,7 +119,7 @@ async function loadAreas() {
     if (!response.ok) throw new Error('Failed to fetch areas');
     
     const data = await response.json();
-    appState.areas = data.areas || [];
+    appState.areas = Array.isArray(data) ? data : (data.areas || []);
     
     // Populate area select dropdown
     populateAreaSelect();
@@ -160,8 +160,12 @@ function populateAreaFilters() {
     
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
+    checkbox.className = 'filter-checkbox';
     checkbox.value = area.name;
-    checkbox.addEventListener('change', updateFilters);
+    checkbox.addEventListener('change', () => {
+      label.classList.toggle('is-checked', checkbox.checked);
+      updateFilters();
+    });
     
     const colorSwatch = document.createElement('span');
     colorSwatch.className = 'color-swatch';
@@ -210,7 +214,7 @@ async function loadTags() {
     if (!response.ok) throw new Error('Failed to fetch tags');
     
     const data = await response.json();
-    appState.tags = data.tags || [];
+    appState.tags = Array.isArray(data) ? data : (data.tags || []);
     
     // Populate tag filters
     populateTagFilters();
@@ -236,8 +240,12 @@ function populateTagFilters() {
     
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
+    checkbox.className = 'filter-checkbox';
     checkbox.value = tag.name;
-    checkbox.addEventListener('change', updateFilters);
+    checkbox.addEventListener('change', () => {
+      label.classList.toggle('is-checked', checkbox.checked);
+      updateFilters();
+    });
     
     const colorSwatch = document.createElement('span');
     colorSwatch.className = 'color-swatch';
@@ -689,8 +697,9 @@ function renderNotesList(notes) {
     tempDiv.innerHTML = note.html_content || '';
     const snippet = (tempDiv.textContent || tempDiv.innerText || '').substring(0, 150) + '...';
     
+    const isActive = appState.currentNoteId === note.id;
     return `
-      <div class="note-list-item" data-note-id="${note.id}" onclick="window.appUtils.loadNote(${note.id})">
+      <div class="note-list-item${isActive ? ' is-active' : ''}" data-note-id="${note.id}" onclick="window.appUtils.loadNote(${note.id})">
         <div class="note-list-item-header">
           <div class="note-list-item-title">${escapeHtml(note.title)}</div>
           ${note.area ? `<span class="area-badge" style="background-color: ${areaColor};">${escapeHtml(note.area)}</span>` : ''}
